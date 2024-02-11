@@ -1,5 +1,6 @@
 import { Collect } from '@/types'
 import Pagination from './Pagination'
+import { Button } from '../local/button'
 
 function classNames(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(' ')
@@ -7,9 +8,15 @@ function classNames(...classes: (string | boolean | undefined)[]) {
 
 export default function Index({
   payload,
-}: {
+  authID,
+  setIsOpen,
+  setSelectedUser,
+}: Readonly<{
   payload: Collect<App.Data.UserData>
-}) {
+  authID: number
+  setIsOpen: (isOpen: boolean) => void
+  setSelectedUser: (user: null | App.Data.UserData) => void
+}>) {
   return (
     <div>
       <div className="sm:flex sm:items-center">
@@ -18,17 +25,11 @@ export default function Index({
             Users
           </h1>
           <p className="mt-2 text-sm text-gray-700">
-            A list of all the users in your account including their name, title,
-            email and role.
+            A list of all the users in the application.
           </p>
         </div>
         <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-          <button
-            type="button"
-            className="block px-3 py-2 text-sm font-semibold text-center text-white bg-indigo-600 rounded-md shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            Add user
-          </button>
+          <Button href={route('users.create')}>Add User</Button>
         </div>
       </div>
 
@@ -40,25 +41,25 @@ export default function Index({
                 <tr>
                   <th
                     scope="col"
-                    className="sticky top-0 z-10 border-b border-gray-300 bg-white bg-opacity-75 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter sm:pl-6 lg:pl-8"
+                    className="sticky top-0 z-5 border-b border-gray-300 bg-white bg-opacity-75 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter sm:pl-6 lg:pl-8"
                   >
                     Name
                   </th>
                   <th
                     scope="col"
-                    className="sticky top-0 z-10 hidden border-b border-gray-300 bg-white bg-opacity-75 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter lg:table-cell"
+                    className="sticky top-0 z-5 hidden border-b border-gray-300 bg-white bg-opacity-75 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter lg:table-cell"
                   >
                     Email
                   </th>
                   <th
                     scope="col"
-                    className="sticky top-0 z-10 border-b border-gray-300 bg-white bg-opacity-75 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter"
+                    className="sticky top-0 z-5 border-b border-gray-300 bg-white bg-opacity-75 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter"
                   >
                     Role
                   </th>
                   <th
                     scope="col"
-                    className="sticky top-0 z-10 border-b border-gray-300 bg-white bg-opacity-75 py-3.5 pl-3 pr-4 backdrop-blur backdrop-filter sm:pr-6 lg:pr-8"
+                    className="sticky top-0 z-5 border-b border-gray-300 bg-white bg-opacity-75 py-3.5 pl-3 pr-4 backdrop-blur backdrop-filter sm:pr-6 lg:pr-8"
                   >
                     <span className="sr-only">Edit</span>
                   </th>
@@ -102,16 +103,23 @@ export default function Index({
                         personIdx !== payload.data.length - 1
                           ? 'border-b border-gray-200'
                           : '',
-                        'relative whitespace-nowrap py-4 pr-4 pl-3 text-right text-sm font-medium sm:pr-8 lg:pr-8'
+                        'relative whitespace-nowrap py-4 pr-4 pl-3 text-right text-sm font-medium sm:pr-8 lg:pr-8 space-x-4'
                       )}
                     >
-                      <a
-                        href="#"
-                        className="text-indigo-600 hover:text-indigo-900"
-                      >
-                        Edit
-                        <span className="sr-only">, {user.name}</span>
-                      </a>
+                      {user.id !== authID && (
+                        <Button
+                          plain
+                          onClick={() => {
+                            setSelectedUser(user)
+                            setIsOpen(true)
+                          }}
+                        >
+                          Delete<span className="sr-only">, {user.name}</span>
+                        </Button>
+                      )}
+                      <Button href={route('users.edit', user)}>
+                        Edit<span className="sr-only">, {user.name}</span>
+                      </Button>
                     </td>
                   </tr>
                 ))}
