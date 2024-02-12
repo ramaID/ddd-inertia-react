@@ -4,15 +4,19 @@ import Dropdown from '@/Components/Dropdown'
 import NavLink from '@/Components/NavLink'
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink'
 import { Link } from '@inertiajs/react'
-import { User } from '@/types'
+import { Auth } from '@/types'
 
 export default function Authenticated({
-  user,
+  auth,
   header,
   children,
-}: PropsWithChildren<{ user: User; header?: ReactNode }>) {
+}: PropsWithChildren<{ auth: Auth; header?: ReactNode }>) {
   const [showingNavigationDropdown, setShowingNavigationDropdown] =
     useState(false)
+
+  function can(permission: string) {
+    return auth.permissions.includes(permission)
+  }
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -33,12 +37,14 @@ export default function Authenticated({
                 >
                   Dashboard
                 </NavLink>
-                <NavLink
-                  href={route('users.index')}
-                  active={route().current('users.index')}
-                >
-                  Users
-                </NavLink>
+                {can('user.viewAny') && (
+                  <NavLink
+                    href={route('users.index')}
+                    active={route().current('users.index')}
+                  >
+                    Users
+                  </NavLink>
+                )}
               </div>
             </div>
 
@@ -51,7 +57,7 @@ export default function Authenticated({
                         type="button"
                         className="inline-flex items-center px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out bg-white border border-transparent rounded-md hover:text-gray-700 focus:outline-none"
                       >
-                        {user.name}
+                        {auth.user.name}
 
                         <svg
                           className="ms-2 -me-0.5 h-4 w-4"
@@ -147,10 +153,10 @@ export default function Authenticated({
           <div className="pt-4 pb-1 border-t border-gray-200">
             <div className="px-4">
               <div className="text-base font-medium text-gray-800">
-                {user.name}
+                {auth.user.name}
               </div>
               <div className="text-sm font-medium text-gray-500">
-                {user.email}
+                {auth.user.email}
               </div>
             </div>
 

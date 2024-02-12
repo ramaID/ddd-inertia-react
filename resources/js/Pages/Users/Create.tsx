@@ -22,7 +22,7 @@ export default function UsersCreate({ auth }: PageProps) {
 
   return (
     <AuthenticatedLayout
-      user={auth.user}
+      auth={auth}
       header={
         <h2 className="text-xl font-semibold leading-tight text-gray-800">
           User: Create

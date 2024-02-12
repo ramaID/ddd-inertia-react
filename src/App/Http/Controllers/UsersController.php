@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Data\UserData as DataObject;
 use App\Models\User as Model;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Response;
 use Inertia\Inertia;
 use Spatie\LaravelData\PaginatedDataCollection;
 
@@ -23,6 +22,8 @@ class UsersController extends Controller
      */
     public function index()
     {
+        $this->authorize('user.viewAny');
+
         $payload = DataObject::collect($this->model->query()->latest('created_at')->paginate(15));
 
         return Inertia::render('Users/Management', compact('payload'));
@@ -30,6 +31,8 @@ class UsersController extends Controller
 
     public function create()
     {
+        $this->authorize('user.create');
+
         return Inertia::render('Users/Create');
     }
 
@@ -38,6 +41,8 @@ class UsersController extends Controller
      */
     public function store(DataObject $data): RedirectResponse
     {
+        $this->authorize('user.create');
+
         $this->model->query()->create($data->toArray());
 
         return to_route('users.index');
@@ -45,6 +50,8 @@ class UsersController extends Controller
 
     public function edit(Model $user)
     {
+        $this->authorize('user.update');
+
         return Inertia::render('Users/Edit', compact('user'));
     }
 
@@ -53,6 +60,8 @@ class UsersController extends Controller
      */
     public function update(DataObject $data, Model $user): RedirectResponse
     {
+        $this->authorize('user.update');
+
         $user->update($data->only('name', 'email')->toArray());
 
         return to_route('users.index');
@@ -63,6 +72,8 @@ class UsersController extends Controller
      */
     public function destroy(Model $user): RedirectResponse
     {
+        $this->authorize('user.delete');
+
         abort_if($user->id === auth()->id(), 403, 'You cannot delete yourself.');
 
         $user->delete();

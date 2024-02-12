@@ -30,9 +30,13 @@ export default function UsersManagement({
       }
     }
 
+  function can(permission: string) {
+    return auth.permissions.includes(permission)
+  }
+
   return (
     <AuthenticatedLayout
-      user={auth.user}
+      auth={auth}
       header={
         <h2 className="text-xl font-semibold leading-tight text-gray-800">
           User Management
@@ -50,6 +54,9 @@ export default function UsersManagement({
                 authID={auth.user.id}
                 setIsOpen={setIsOpen}
                 setSelectedUser={setSelectedUser}
+                canCreate={can('user.create')}
+                canEdit={can('user.update')}
+                canDelete={can('user.delete')}
               />
 
               <Dialog open={isOpen} onClose={setIsOpen}>

@@ -11,11 +11,17 @@ export default function Index({
   authID,
   setIsOpen,
   setSelectedUser,
+  canCreate,
+  canEdit,
+  canDelete,
 }: Readonly<{
   payload: Collect<App.Data.UserData>
   authID: number
   setIsOpen: (isOpen: boolean) => void
   setSelectedUser: (user: null | App.Data.UserData) => void
+  canCreate: boolean
+  canEdit: boolean
+  canDelete: boolean
 }>) {
   return (
     <div>
@@ -29,7 +35,7 @@ export default function Index({
           </p>
         </div>
         <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-          <Button href={route('users.create')}>Add User</Button>
+          {canCreate && <Button href={route('users.create')}>Add User</Button>}
         </div>
       </div>
 
@@ -106,7 +112,7 @@ export default function Index({
                         'relative whitespace-nowrap py-4 pr-4 pl-3 text-right text-sm font-medium sm:pr-8 lg:pr-8 space-x-4'
                       )}
                     >
-                      {user.id !== authID && (
+                      {user.id !== authID && canDelete && (
                         <Button
                           plain
                           onClick={() => {
@@ -117,9 +123,11 @@ export default function Index({
                           Delete<span className="sr-only">, {user.name}</span>
                         </Button>
                       )}
-                      <Button href={route('users.edit', user)}>
-                        Edit<span className="sr-only">, {user.name}</span>
-                      </Button>
+                      {canEdit && (
+                        <Button href={route('users.edit', user)}>
+                          Edit<span className="sr-only">, {user.name}</span>
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}
