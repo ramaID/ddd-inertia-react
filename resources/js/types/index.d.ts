@@ -38,3 +38,34 @@ export type Collect<T> = {
   to: number
   total: number
 }
+
+export enum RoleName {
+  ADMIN = 'admin',
+  STAFF = 'staff',
+}
+
+type setDataByObject<TForm> = (data: TForm) => void
+type setDataByMethod<TForm> = (data: (previousData: TForm) => TForm) => void
+type setDataByKeyValuePair<TForm> = <K extends keyof TForm>(
+  key: K,
+  value: TForm[K]
+) => void
+
+type CombinedDataType<TForm> = setDataByObject<TForm> &
+  setDataByMethod<TForm> &
+  setDataByKeyValuePair<TForm>
+type errors<TForm> = Partial<Record<keyof TForm, string>>
+
+export type FormFields<TForm, AdditionalTForm> = {
+  data: TForm
+  setData: CombinedDataType<TForm>
+  errors: errors<TForm>
+} & AdditionalTForm
+
+export type UserFields = {
+  name: string
+  email: string
+  password: string | null
+  password_confirmation: string | null
+  roles: App.Data.RoleData[]
+}

@@ -2,10 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Data\UserData as DataObject;
-use App\Models\User as Model;
-use Illuminate\Http\RedirectResponse;
+use App\Models\Role;
+use App\Models\User;
 use Inertia\Inertia;
+use App\Data\RoleData;
+use App\Models\User as Model;
+use Illuminate\Support\Facades\DB;
+use App\Data\UserData as DataObject;
+use App\Data\UserData;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Cache;
 use Spatie\LaravelData\PaginatedDataCollection;
 
 class UsersController extends Controller
@@ -24,7 +30,8 @@ class UsersController extends Controller
     {
         $this->authorize('user.viewAny');
 
-        $payload = DataObject::collect($this->model->query()->latest('created_at')->paginate(15));
+        $queries = $this->model->query()->with('roles')->latest('created_at')->paginate(15);
+        $payload = DataObject::collect($queries);
 
         return Inertia::render('Users/Management', compact('payload'));
     }
@@ -33,7 +40,9 @@ class UsersController extends Controller
     {
         $this->authorize('user.create');
 
-        return Inertia::render('Users/Create');
+        $roles = RoleData::collect(Role::query()->get());
+
+        return Inertia::render('Users/Create', compact('roles'));
     }
 
     /**
@@ -43,7 +52,15 @@ class UsersController extends Controller
     {
         $this->authorize('user.create');
 
-        $this->model->query()->create($data->toArray());
+        DB::transaction(function () use ($data) {
+            /** @var User */
+            $user = $this->model->query()->create($data->toArray());
+
+            $rolesID = array_map(fn (RoleData $role) => $role->id, $data->roles);
+            $roles = Role::query()->whereIn('id', $rolesID)->get();
+
+            $user->roles()->sync($roles);
+        });
 
         return to_route('users.index');
     }
@@ -52,7 +69,12 @@ class UsersController extends Controller
     {
         $this->authorize('user.update');
 
-        return Inertia::render('Users/Edit', compact('user'));
+        $user->load('roles');
+
+        $user = UserData::fromModel($user);
+        $roles = RoleData::collect(Role::query()->get());
+
+        return Inertia::render('Users/Edit', compact('user', 'roles'));
     }
 
     /**
@@ -62,7 +84,16 @@ class UsersController extends Controller
     {
         $this->authorize('user.update');
 
-        $user->update($data->only('name', 'email')->toArray());
+        Cache::forget('permissions-'.$user->id);
+
+        DB::transaction(function () use ($data, $user) {
+            $user->update($data->only('name', 'email')->toArray());
+
+            $rolesID = array_map(fn (RoleData $role) => $role->id, $data->roles);
+            $roles = Role::query()->whereIn('id', $rolesID)->get();
+
+            $user->fresh()->roles()->sync($roles, true);
+        });
 
         return to_route('users.index');
     }
@@ -76,7 +107,10 @@ class UsersController extends Controller
 
         abort_if($user->id === auth()->id(), 403, 'You cannot delete yourself.');
 
-        $user->delete();
+        DB::transaction(function () use ($user) {
+            $user->roles()->detach();
+            $user->delete();
+        });
 
         return redirect()->back();
     }

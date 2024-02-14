@@ -16,6 +16,7 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         $this->createAdminRole();
+        $this->createStaffRole();
     }
 
     protected function createRole(RoleName $role, Collection $permissions): void
@@ -31,5 +32,14 @@ class RoleSeeder extends Seeder
             ->pluck('id');
 
         $this->createRole(RoleName::ADMIN, $permissions);
+    }
+
+    protected function createStaffRole(): void
+    {
+        $permissions = Permission::query()
+            ->where('name', 'like', 'saham.%')
+            ->pluck('id');
+
+        $this->createRole(RoleName::STAFF, $permissions);
     }
 }
