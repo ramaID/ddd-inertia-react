@@ -22,7 +22,7 @@ class PermissionSeeder extends Seeder
             'forceDelete',
         ];
 
-        $resources = ['user', 'saham'];
+        $resources = ['user', 'staff'];
 
         collect($resources)
             ->crossJoin($actions)
