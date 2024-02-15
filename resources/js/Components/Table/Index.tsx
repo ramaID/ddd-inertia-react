@@ -11,11 +11,17 @@ export default function Index({
   authID,
   setIsOpen,
   setSelectedUser,
+  canCreate,
+  canEdit,
+  canDelete,
 }: Readonly<{
   payload: Collect<App.Data.UserData>
   authID: number
   setIsOpen: (isOpen: boolean) => void
   setSelectedUser: (user: null | App.Data.UserData) => void
+  canCreate: boolean
+  canEdit: boolean
+  canDelete: boolean
 }>) {
   return (
     <div>
@@ -29,38 +35,26 @@ export default function Index({
           </p>
         </div>
         <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-          <Button href={route('users.create')}>Add User</Button>
+          {canCreate && <Button href={route('users.create')}>Add User</Button>}
         </div>
       </div>
 
       <div className="flow-root mt-8">
         <div className="-mx-4 -my-2 sm:-mx-6 lg:-mx-8">
           <div className="inline-block min-w-full py-2 align-middle">
-            <table className="min-w-full border-separate border-spacing-0">
+            <table className="table">
               <thead>
                 <tr>
-                  <th
-                    scope="col"
-                    className="sticky top-0 z-5 border-b border-gray-300 bg-white bg-opacity-75 py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter sm:pl-6 lg:pl-8"
-                  >
+                  <th scope="col" className="pl-4 pr-3 lg:pl-8 sm:pl-6">
                     Name
                   </th>
-                  <th
-                    scope="col"
-                    className="sticky top-0 z-5 hidden border-b border-gray-300 bg-white bg-opacity-75 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter lg:table-cell"
-                  >
+                  <th scope="col" className="hidden px-3 lg:table-cell">
                     Email
                   </th>
-                  <th
-                    scope="col"
-                    className="sticky top-0 z-5 border-b border-gray-300 bg-white bg-opacity-75 px-3 py-3.5 text-left text-sm font-semibold text-gray-900 backdrop-blur backdrop-filter"
-                  >
+                  <th scope="col" className="px-3 z-5">
                     Role
                   </th>
-                  <th
-                    scope="col"
-                    className="sticky top-0 z-5 border-b border-gray-300 bg-white bg-opacity-75 py-3.5 pl-3 pr-4 backdrop-blur backdrop-filter sm:pr-6 lg:pr-8"
-                  >
+                  <th scope="col" className="pl-3 pr-4 z-5 sm:pr-6 lg:pr-8">
                     <span className="sr-only">Edit</span>
                   </th>
                 </tr>
@@ -96,7 +90,9 @@ export default function Index({
                         'whitespace-nowrap px-3 py-4 text-sm text-gray-500'
                       )}
                     >
-                      {'-'}
+                      {user.roles.length > 0
+                        ? user.roles.map((role) => role.name).join(', ')
+                        : '-'}
                     </td>
                     <td
                       className={classNames(
@@ -106,7 +102,7 @@ export default function Index({
                         'relative whitespace-nowrap py-4 pr-4 pl-3 text-right text-sm font-medium sm:pr-8 lg:pr-8 space-x-4'
                       )}
                     >
-                      {user.id !== authID && (
+                      {user.id !== authID && canDelete && (
                         <Button
                           plain
                           onClick={() => {
@@ -117,9 +113,11 @@ export default function Index({
                           Delete<span className="sr-only">, {user.name}</span>
                         </Button>
                       )}
-                      <Button href={route('users.edit', user)}>
-                        Edit<span className="sr-only">, {user.name}</span>
-                      </Button>
+                      {canEdit && (
+                        <Button href={route('users.edit', user)}>
+                          Edit<span className="sr-only">, {user.name}</span>
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}

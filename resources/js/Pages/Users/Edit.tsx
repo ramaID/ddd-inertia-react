@@ -1,19 +1,25 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout'
 import { Head, useForm } from '@inertiajs/react'
-import { Collect, PageProps } from '@/types'
+import { Collect, PageProps, UserFields } from '@/types'
 import { ErrorMessage, Fieldset, Label } from '@/Components/local/fieldset'
 import { Input } from '@/Components/local/input'
 import { Field as HeadlessField } from '@headlessui/react'
 import { Button } from '@/Components/local/button'
 import { FormEventHandler } from 'react'
+import { Radio, RadioField, RadioGroup } from '@/Components/local/radio'
+import UsersForm from './Form'
 
 export default function UsersEdit({
   auth,
   user,
-}: PageProps<{ user: App.Data.UserData }>) {
-  const { data, setData, put, processing, errors } = useForm({
+  roles,
+}: PageProps<{ user: App.Data.UserData; roles: App.Data.RoleData[] }>) {
+  const { data, setData, put, processing, errors } = useForm<UserFields>({
       name: user.name,
       email: user.email,
+      password: null,
+      password_confirmation: null,
+      roles: user.roles,
     }),
     submit: FormEventHandler = (e) => {
       e.preventDefault()
@@ -23,7 +29,7 @@ export default function UsersEdit({
 
   return (
     <AuthenticatedLayout
-      user={auth.user}
+      auth={auth}
       header={
         <h2 className="text-xl font-semibold leading-tight text-gray-800">
           User: Edit
@@ -42,30 +48,13 @@ export default function UsersEdit({
                     data-slot="control"
                     className="grid items-center grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-3"
                   >
-                    <HeadlessField className="grid grid-cols-[subgrid] sm:col-span-3">
-                      <Label>Name</Label>
-                      <Input
-                        className="mt-3 sm:col-span-2 sm:mt-0"
-                        value={data.name}
-                        onChange={(e) => setData('name', e.target.value)}
-                        autoFocus
-                      />
-                      {errors.name && (
-                        <ErrorMessage>{errors.name}</ErrorMessage>
-                      )}
-                    </HeadlessField>
-                    <HeadlessField className="grid grid-cols-[subgrid] sm:col-span-3">
-                      <Label>Email</Label>
-                      <Input
-                        className="mt-3 sm:col-span-2 sm:mt-0"
-                        value={data.email}
-                        onChange={(e) => setData('email', e.target.value)}
-                        type="email"
-                      />
-                      {errors.email && (
-                        <ErrorMessage>{errors.email}</ErrorMessage>
-                      )}
-                    </HeadlessField>
+                    <UsersForm
+                      data={data}
+                      setData={setData}
+                      errors={errors}
+                      roles={roles}
+                    />
+
                     <HeadlessField className="grid grid-cols-[subgrid] sm:col-span-3">
                       <Label></Label>
                       <div>
